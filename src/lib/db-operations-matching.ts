@@ -11,7 +11,7 @@ export interface MatchingResult {
 
 export const executeMatching = async (
   weights: { expertise: number; budget: number; deadline: number; availability: number },
-  threshold: number = 30
+  threshold: number = 20
 ): Promise<MatchingResult> => {
   const result: MatchingResult = {
     success: true,

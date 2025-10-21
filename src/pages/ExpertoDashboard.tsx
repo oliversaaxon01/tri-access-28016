@@ -190,6 +190,12 @@ const ExpertoDashboard = () => {
         </TabsList>
 
         <TabsContent value="matches" className="space-y-4">
+          <div className="mb-4 p-4 bg-muted/50 rounded-lg">
+            <p className="text-sm text-muted-foreground">
+              💡 El admin ha encontrado estos retos que coinciden con tus categorías de experiencia. 
+              Revisa los detalles y envía solicitudes a los que más te interesen.
+            </p>
+          </div>
           {potentialMatches.length === 0 ? (
             <Card className="shadow-elegant">
               <CardContent className="py-12 text-center">
@@ -200,36 +206,73 @@ const ExpertoDashboard = () => {
             </Card>
           ) : (
             <div className="grid gap-4">
-              {potentialMatches.map((match) => (
-                <Card key={match.id} className="shadow-elegant hover:shadow-glow transition-smooth">
-                  <CardHeader>
-                    <CardTitle className="text-lg">Match Potencial</CardTitle>
-                    <CardDescription>
-                      Score: {match.matchScore?.toFixed(0)}% | Reto: {match.challengeId.slice(0, 8)}...
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Button
-                      onClick={async () => {
-                        await updateMatch(match.id, {
-                          expertoInterested: true,
-                          status: 'pending',
-                        });
-                        await loadData();
-                      }}
-                      className="w-full"
-                    >
-                      <Users className="mr-2 h-4 w-4" />
-                      Enviar Solicitud
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
+              {potentialMatches.map((match) => {
+                const challenge = challenges.find(c => c.id === match.challengeId);
+                return (
+                  <Card key={match.id} className="shadow-elegant hover:shadow-glow transition-smooth">
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <CardTitle className="text-lg">
+                            {challenge?.title || 'Cargando reto...'}
+                          </CardTitle>
+                          <CardDescription className="mt-1">
+                            Compatibilidad: {match.matchScore?.toFixed(0)}%
+                          </CardDescription>
+                        </div>
+                        <Badge variant="default" className="ml-2">Match</Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      {challenge ? (
+                        <div className="space-y-4">
+                          <p className="text-sm text-muted-foreground">{challenge.description}</p>
+                          
+                          <div className="space-y-2">
+                            <p className="text-sm font-medium">Categorías del reto:</p>
+                            <div className="flex flex-wrap gap-2">
+                              {challenge.categories?.map(cat => (
+                                <Badge key={cat} variant="secondary">{cat}</Badge>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <span>💰 {challenge.budget}</span>
+                            <span>📅 {new Date(challenge.deadline).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">Cargando información del reto...</p>
+                      )}
+                      <Button
+                        onClick={async () => {
+                          await updateMatch(match.id, {
+                            expertoInterested: true,
+                            status: 'pending',
+                          });
+                          await loadData();
+                        }}
+                        className="w-full mt-4"
+                      >
+                        <Users className="mr-2 h-4 w-4" />
+                        Enviar Solicitud de Match
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </TabsContent>
 
         <TabsContent value="solicitudes" className="space-y-4">
+          <div className="mb-4 p-4 bg-muted/50 rounded-lg">
+            <p className="text-sm text-muted-foreground">
+              🔔 Estas son las solicitudes de empresas interesadas en trabajar contigo. 
+              Acepta para habilitar el chat y comenzar la colaboración.
+            </p>
+          </div>
           {pendingRequests.length === 0 ? (
             <Card className="shadow-elegant">
               <CardContent className="py-12 text-center">
@@ -239,33 +282,60 @@ const ExpertoDashboard = () => {
             </Card>
           ) : (
             <div className="grid gap-4">
-              {pendingRequests.map((match) => (
-                <Card key={match.id} className="shadow-elegant hover:shadow-glow transition-smooth">
-                  <CardHeader>
-                    <CardTitle className="text-lg">Nueva Solicitud</CardTitle>
-                    <CardDescription>Reto ID: {match.challengeId.slice(0, 8)}...</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex gap-3">
-                      <Button
-                        variant="outline"
-                        className="flex-1 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                        onClick={() => handleRejectMatch(match.id)}
-                      >
-                        <X className="mr-2 h-4 w-4" />
-                        Rechazar
-                      </Button>
-                      <Button
-                        className="flex-1"
-                        onClick={() => handleAcceptMatch(match.id)}
-                      >
-                        <Check className="mr-2 h-4 w-4" />
-                        Aceptar
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+              {pendingRequests.map((match) => {
+                const challenge = challenges.find(c => c.id === match.challengeId);
+                return (
+                  <Card key={match.id} className="shadow-elegant hover:shadow-glow transition-smooth">
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <CardTitle className="text-lg">Nueva Solicitud de Empresa</CardTitle>
+                          <CardDescription className="mt-1">
+                            {challenge?.title || 'Cargando reto...'}
+                          </CardDescription>
+                        </div>
+                        <Badge variant="secondary">Pendiente</Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      {challenge && (
+                        <div className="space-y-4 mb-4">
+                          <p className="text-sm text-muted-foreground">{challenge.description}</p>
+                          <div>
+                            <p className="text-sm font-medium mb-1">Categorías:</p>
+                            <div className="flex flex-wrap gap-2">
+                              {challenge.categories?.map(cat => (
+                                <Badge key={cat} variant="secondary">{cat}</Badge>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <span>💰 {challenge.budget}</span>
+                            <span>📅 {new Date(challenge.deadline).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                      )}
+                      <div className="flex gap-3">
+                        <Button
+                          variant="outline"
+                          className="flex-1 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                          onClick={() => handleRejectMatch(match.id)}
+                        >
+                          <X className="mr-2 h-4 w-4" />
+                          Rechazar
+                        </Button>
+                        <Button
+                          className="flex-1"
+                          onClick={() => handleAcceptMatch(match.id)}
+                        >
+                          <Check className="mr-2 h-4 w-4" />
+                          Aceptar y Habilitar Chat
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </TabsContent>

@@ -196,6 +196,12 @@ const EmpresaDashboard = () => {
         </TabsContent>
 
         <TabsContent value="matches" className="space-y-4">
+          <div className="mb-4 p-4 bg-muted/50 rounded-lg">
+            <p className="text-sm text-muted-foreground">
+              💡 El admin ha encontrado estos expertos que coinciden con las categorías de tus retos. 
+              Revisa sus perfiles y envía solicitudes a los que más te interesen.
+            </p>
+          </div>
           {potentialMatches.length === 0 ? (
             <Card className="shadow-elegant">
               <CardContent className="py-12 text-center">
@@ -211,28 +217,47 @@ const EmpresaDashboard = () => {
                 return (
                   <Card key={match.id} className="shadow-elegant hover:shadow-glow transition-smooth">
                     <CardHeader>
-                      <CardTitle className="text-lg">Match Potencial</CardTitle>
-                      <CardDescription>
-                        Score: {match.matchScore?.toFixed(0)}% | Experto: {match.expertoId.slice(0, 8)}...
-                      </CardDescription>
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <CardTitle className="text-lg">Experto Recomendado</CardTitle>
+                          <CardDescription className="mt-1">
+                            Compatibilidad: {match.matchScore?.toFixed(0)}%
+                          </CardDescription>
+                        </div>
+                        <Badge variant="default" className="ml-2">Match</Badge>
+                      </div>
                     </CardHeader>
                     <CardContent>
-                      {expert && (
-                        <div className="space-y-2 mb-4">
-                          <p className="text-sm">{expert.bio || 'Sin biografía'}</p>
-                          <div className="flex flex-wrap gap-2">
-                            {expert.categories.map(cat => (
-                              <Badge key={cat} variant="secondary">{cat}</Badge>
-                            ))}
+                      {expert ? (
+                        <div className="space-y-4">
+                          <div className="space-y-2">
+                            <p className="text-sm font-medium">Sobre el experto:</p>
+                            <p className="text-sm text-muted-foreground">{expert.bio || 'Sin biografía'}</p>
+                          </div>
+                          
+                          <div className="space-y-2">
+                            <p className="text-sm font-medium">Categorías en común:</p>
+                            <div className="flex flex-wrap gap-2">
+                              {expert.categories.map(cat => (
+                                <Badge key={cat} variant="secondary">{cat}</Badge>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <span>💼 {expert.experience} años exp.</span>
+                            <span>💰 {expert.hourlyRate}</span>
                           </div>
                         </div>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">Cargando información del experto...</p>
                       )}
                       <Button
                         onClick={() => handleSendMatchRequest(match.id)}
-                        className="w-full"
+                        className="w-full mt-4"
                       >
                         <Users className="mr-2 h-4 w-4" />
-                        Enviar Solicitud
+                        Enviar Solicitud de Match
                       </Button>
                     </CardContent>
                   </Card>
@@ -243,6 +268,12 @@ const EmpresaDashboard = () => {
         </TabsContent>
 
         <TabsContent value="solicitudes" className="space-y-4">
+          <div className="mb-4 p-4 bg-muted/50 rounded-lg">
+            <p className="text-sm text-muted-foreground">
+              🔔 Estas son las solicitudes de expertos interesados en tus retos. 
+              Acepta para habilitar el chat y comenzar la colaboración.
+            </p>
+          </div>
           {pendingRequests.length === 0 ? (
             <Card className="shadow-elegant">
               <CardContent className="py-12 text-center">
@@ -254,29 +285,46 @@ const EmpresaDashboard = () => {
             <div className="grid gap-4">
               {pendingRequests.map((match) => {
                 const expert = experts.find(e => e.userId === match.expertoId);
+                const challenge = challenges.find(c => c.id === match.challengeId);
                 return (
                   <Card key={match.id} className="shadow-elegant hover:shadow-glow transition-smooth">
                     <CardHeader>
-                      <CardTitle className="text-lg">Solicitud de Experto</CardTitle>
-                      <CardDescription>
-                        Experto: {match.expertoId.slice(0, 8)}... | Reto: {match.challengeId.slice(0, 8)}...
-                      </CardDescription>
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <CardTitle className="text-lg">Solicitud de Experto</CardTitle>
+                          <CardDescription className="mt-1">
+                            Para el reto: {challenge?.title || 'Cargando...'}
+                          </CardDescription>
+                        </div>
+                        <Badge variant="secondary">Pendiente</Badge>
+                      </div>
                     </CardHeader>
                     <CardContent>
                       {expert && (
-                        <div className="space-y-2 mb-4">
-                          <p className="text-sm">{expert.bio || 'Sin biografía'}</p>
-                          <div className="flex flex-wrap gap-2">
-                            {expert.categories.map(cat => (
-                              <Badge key={cat} variant="secondary">{cat}</Badge>
-                            ))}
+                        <div className="space-y-4 mb-4">
+                          <div>
+                            <p className="text-sm font-medium mb-1">Sobre el experto:</p>
+                            <p className="text-sm text-muted-foreground">{expert.bio || 'Sin biografía'}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium mb-1">Categorías:</p>
+                            <div className="flex flex-wrap gap-2">
+                              {expert.categories.map(cat => (
+                                <Badge key={cat} variant="secondary">{cat}</Badge>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <span>💼 {expert.experience} años exp.</span>
+                            <span>💰 {expert.hourlyRate}</span>
+                            <span>⏰ {expert.availability}</span>
                           </div>
                         </div>
                       )}
                       <div className="flex gap-3">
                         <Button
                           variant="outline"
-                          className="flex-1"
+                          className="flex-1 border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
                           onClick={async () => {
                             await updateMatch(match.id, { status: 'rejected' });
                             await loadData();
@@ -296,7 +344,7 @@ const EmpresaDashboard = () => {
                           }}
                         >
                           <Check className="mr-2 h-4 w-4" />
-                          Aceptar
+                          Aceptar y Habilitar Chat
                         </Button>
                       </div>
                     </CardContent>
