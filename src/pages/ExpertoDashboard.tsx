@@ -48,6 +48,7 @@ const ExpertoDashboard = () => {
   });
   const [selectedChat, setSelectedChat] = useState<{ matchId: string; userName: string } | null>(null);
   const [expertiseInput, setExpertiseInput] = useState('');
+  const [empresaNames, setEmpresaNames] = useState<Record<string, string>>({});
 
   useEffect(() => {
     loadData();
@@ -77,6 +78,17 @@ const ExpertoDashboard = () => {
       if (savedProfile) {
         setProfile(savedProfile);
       }
+
+      // Load empresa names
+      const names: Record<string, string> = {};
+      const empresaIds = [...new Set(userMatches.map(m => m.empresaId))];
+      for (const empresaId of empresaIds) {
+        const empresaUser = await db.getUserById(empresaId);
+        if (empresaUser) {
+          names[empresaId] = empresaUser.name;
+        }
+      }
+      setEmpresaNames(names);
     } catch (error) {
       console.error('Error loading data:', error);
     }
@@ -208,16 +220,18 @@ const ExpertoDashboard = () => {
             <div className="grid gap-4">
               {potentialMatches.map((match) => {
                 const challenge = challenges.find(c => c.id === match.challengeId);
+                const empresaName = empresaNames[match.empresaId] || 'Empresa';
                 return (
                   <Card key={match.id} className="shadow-elegant hover:shadow-glow transition-smooth">
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <CardTitle className="text-lg">
-                            {challenge?.title || 'Cargando reto...'}
+                          <CardTitle className="text-lg flex items-center gap-2">
+                            <span>🔄</span>
+                            {empresaName}
                           </CardTitle>
                           <CardDescription className="mt-1">
-                            Compatibilidad: {match.matchScore?.toFixed(0)}%
+                            Reto: {challenge?.title || 'Cargando...'} • Compatibilidad: {match.matchScore?.toFixed(0)}%
                           </CardDescription>
                         </div>
                         <Badge variant="default" className="ml-2">Match</Badge>
@@ -284,14 +298,18 @@ const ExpertoDashboard = () => {
             <div className="grid gap-4">
               {pendingRequests.map((match) => {
                 const challenge = challenges.find(c => c.id === match.challengeId);
+                const empresaName = empresaNames[match.empresaId] || 'Empresa';
                 return (
                   <Card key={match.id} className="shadow-elegant hover:shadow-glow transition-smooth">
                     <CardHeader>
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <CardTitle className="text-lg">Nueva Solicitud de Empresa</CardTitle>
+                          <CardTitle className="text-lg flex items-center gap-2">
+                            <span>🔄</span>
+                            {empresaName}
+                          </CardTitle>
                           <CardDescription className="mt-1">
-                            {challenge?.title || 'Cargando reto...'}
+                            Reto: {challenge?.title || 'Cargando...'}
                           </CardDescription>
                         </div>
                         <Badge variant="secondary">Pendiente</Badge>
@@ -351,23 +369,29 @@ const ExpertoDashboard = () => {
             </Card>
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
-              {confirmedMatches.map((match) => (
-                <Card key={match.id} className="shadow-elegant hover:shadow-glow transition-smooth">
-                  <CardHeader>
-                    <CardTitle className="text-lg">Chat Activo</CardTitle>
-                    <CardDescription>Empresa: {match.empresaId.slice(0, 8)}...</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Button
-                      onClick={() => setSelectedChat({ matchId: match.id, userName: 'Empresa' })}
-                      className="w-full"
-                    >
-                      <MessageSquare className="mr-2 h-4 w-4" />
-                      Abrir Chat
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
+              {confirmedMatches.map((match) => {
+                const empresaName = empresaNames[match.empresaId] || 'Empresa';
+                return (
+                  <Card key={match.id} className="shadow-elegant hover:shadow-glow transition-smooth">
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <span>🔄</span>
+                        {empresaName}
+                      </CardTitle>
+                      <CardDescription>Chat activo</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Button
+                        onClick={() => setSelectedChat({ matchId: match.id, userName: empresaName })}
+                        className="w-full"
+                      >
+                        <MessageSquare className="mr-2 h-4 w-4" />
+                        Abrir Chat
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </TabsContent>

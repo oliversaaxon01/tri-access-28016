@@ -21,7 +21,10 @@ export const ExpertProfileCard = ({ profile, userName, onSendMatch, matchStatus 
               <User className="w-6 h-6 text-primary" />
             </div>
             <div>
-              <CardTitle className="text-lg">{userName}</CardTitle>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <span>⚙️</span>
+                {userName}
+              </CardTitle>
               <CardDescription>{profile.experience} años de experiencia</CardDescription>
             </div>
           </div>
