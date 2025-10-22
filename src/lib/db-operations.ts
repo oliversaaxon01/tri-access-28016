@@ -1,4 +1,5 @@
 import { db, Challenge, Match, Message, ExpertProfile, User, MatchingConfig, MatchingEvent, Notification } from './db';
+import { realtimeEvents } from './realtime-events';
 
 // Challenge operations
 export const createChallenge = async (challenge: Omit<Challenge, 'id' | 'createdAt'>): Promise<Challenge> => {
@@ -14,7 +15,11 @@ export const createChallenge = async (challenge: Omit<Challenge, 'id' | 'created
     const store = transaction.objectStore('challenges');
     const request = store.add(newChallenge);
 
-    request.onsuccess = () => resolve(newChallenge);
+    request.onsuccess = () => {
+      // Emitir evento en tiempo real
+      realtimeEvents.emit('challenge-created', newChallenge);
+      resolve(newChallenge);
+    };
     request.onerror = () => reject(request.error);
   });
 };
@@ -61,7 +66,11 @@ export const createMatch = async (match: Omit<Match, 'id' | 'createdAt'>): Promi
     const store = transaction.objectStore('matches');
     const request = store.add(newMatch);
 
-    request.onsuccess = () => resolve(newMatch);
+    request.onsuccess = () => {
+      // Emitir evento en tiempo real
+      realtimeEvents.emit('match-created', newMatch);
+      resolve(newMatch);
+    };
     request.onerror = () => reject(request.error);
   });
 };
@@ -79,7 +88,11 @@ export const updateMatch = async (matchId: string, updates: Partial<Match>): Pro
       if (match) {
         const updatedMatch = { ...match, ...updates };
         const putRequest = store.put(updatedMatch);
-        putRequest.onsuccess = () => resolve();
+        putRequest.onsuccess = () => {
+          // Emitir evento en tiempo real
+          realtimeEvents.emit('match-updated', updatedMatch);
+          resolve();
+        };
         putRequest.onerror = () => reject(putRequest.error);
       } else {
         reject(new Error('Match not found'));
@@ -131,7 +144,11 @@ export const createMessage = async (message: Omit<Message, 'id' | 'createdAt'>):
     const store = transaction.objectStore('messages');
     const request = store.add(newMessage);
 
-    request.onsuccess = () => resolve(newMessage);
+    request.onsuccess = () => {
+      // Emitir evento en tiempo real
+      realtimeEvents.emit('message-created', newMessage);
+      resolve(newMessage);
+    };
     request.onerror = () => reject(request.error);
   });
 };
@@ -244,7 +261,11 @@ export const updateChallengeStatus = async (challengeId: string, status: Challen
       if (challenge) {
         const updatedChallenge = { ...challenge, status };
         const putRequest = store.put(updatedChallenge);
-        putRequest.onsuccess = () => resolve();
+        putRequest.onsuccess = () => {
+          // Emitir evento en tiempo real
+          realtimeEvents.emit('challenge-updated', updatedChallenge);
+          resolve();
+        };
         putRequest.onerror = () => reject(putRequest.error);
       } else {
         reject(new Error('Challenge not found'));

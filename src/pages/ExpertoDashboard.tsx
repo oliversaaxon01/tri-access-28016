@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { realtimeEvents } from '@/lib/realtime-events';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -52,6 +53,31 @@ const ExpertoDashboard = () => {
 
   useEffect(() => {
     loadData();
+
+    // Escuchar eventos en tiempo real
+    const unsubscribeMatch = realtimeEvents.on('match-created', () => {
+      loadData();
+    });
+
+    const unsubscribeMatchUpdate = realtimeEvents.on('match-updated', () => {
+      loadData();
+    });
+
+    const unsubscribeMessage = realtimeEvents.on('message-created', () => {
+      loadData();
+    });
+
+    const unsubscribeChallenge = realtimeEvents.on('challenge-created', () => {
+      loadData();
+    });
+
+    // Limpiar listeners al desmontar
+    return () => {
+      unsubscribeMatch();
+      unsubscribeMatchUpdate();
+      unsubscribeMessage();
+      unsubscribeChallenge();
+    };
   }, [user]);
 
   const loadData = async () => {

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { realtimeEvents } from '@/lib/realtime-events';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -109,6 +110,31 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     loadData();
+
+    // Escuchar eventos en tiempo real
+    const unsubscribeChallenge = realtimeEvents.on('challenge-created', () => {
+      loadData();
+    });
+
+    const unsubscribeChallengeUpdate = realtimeEvents.on('challenge-updated', () => {
+      loadData();
+    });
+
+    const unsubscribeMatch = realtimeEvents.on('match-created', () => {
+      loadData();
+    });
+
+    const unsubscribeMatchUpdate = realtimeEvents.on('match-updated', () => {
+      loadData();
+    });
+
+    // Limpiar listeners al desmontar
+    return () => {
+      unsubscribeChallenge();
+      unsubscribeChallengeUpdate();
+      unsubscribeMatch();
+      unsubscribeMatchUpdate();
+    };
   }, []);
 
   const handleUserAction = async (userId: string, status: User['status']) => {
